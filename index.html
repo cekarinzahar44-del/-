@@ -1,2297 +1,663 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Алексей Волков — Full-Stack Developer</title>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
-
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-card: #1a1a2e;
-            --bg-card-hover: #222240;
-            --accent: #6c63ff;
-            --accent-light: #8b83ff;
-            --accent-glow: rgba(108, 99, 255, 0.3);
-            --accent-secondary: #00d4aa;
-            --accent-tertiary: #ff6b6b;
-            --text-primary: #ffffff;
-            --text-secondary: #a0a0b8;
-            --text-muted: #6b6b80;
-            --border: #2a2a40;
-            --gradient-1: linear-gradient(135deg, #6c63ff, #00d4aa);
-            --gradient-2: linear-gradient(135deg, #6c63ff, #ff6b6b);
-            --gradient-3: linear-gradient(135deg, #00d4aa, #6c63ff);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent) var(--bg-secondary);
-        }
-
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
-        ::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            overflow-x: hidden;
-            cursor: none;        }
-
-        /* ===== CUSTOM CURSOR ===== */
-        .cursor {
-            width: 20px;
-            height: 20px;
-            border: 2px solid var(--accent);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 99999;
-            transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
-            mix-blend-mode: difference;
-        }
-
-        .cursor-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            border-radius: 50%;
-            position: fixed;
-            pointer-events: none;
-            z-index: 99999;
-            transition: transform 0.08s ease;
-        }
-
-        .cursor.active {
-            transform: scale(2.5);
-            background: var(--accent-glow);
-            border-color: var(--accent-light);
-        }
-
-        /* ===== LOADER ===== */
-        .loader-wrapper {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 100000;
-            transition: opacity 0.8s ease, visibility 0.8s ease;
-        }
-
-        .loader-wrapper.hidden {
-            opacity: 0;
-            visibility: hidden;        }
-
-        .loader {
-            text-align: center;
-        }
-
-        .loader-text {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 1.2rem;
-            color: var(--accent);
-            margin-bottom: 30px;
-            opacity: 0;
-            animation: fadeInUp 0.6s ease forwards;
-        }
-
-        .loader-bar {
-            width: 200px;
-            height: 3px;
-            background: var(--border);
-            border-radius: 3px;
-            overflow: hidden;
-            margin: 0 auto;
-        }
-
-        .loader-bar-fill {
-            height: 100%;
-            background: var(--gradient-1);
-            border-radius: 3px;
-            animation: loadBar 2s ease forwards;
-        }
-
-        @keyframes loadBar {
-            0% { width: 0%; }
-            50% { width: 70%; }
-            100% { width: 100%; }
-        }
-
-        @keyframes fadeInUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* ===== PARTICLES ===== */
-        #particles-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;            pointer-events: none;
-        }
-
-        /* ===== NAVIGATION ===== */
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px 60px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            z-index: 1000;
-            transition: all 0.4s ease;
-            background: transparent;
-        }
-
-        .navbar.scrolled {
-            padding: 15px 60px;
-            background: rgba(10, 10, 15, 0.85);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .nav-logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            letter-spacing: -1px;
-        }
-
-        .nav-logo span {
-            font-family: 'JetBrains Mono', monospace;
-            font-weight: 400;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 40px;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.9rem;            font-weight: 500;
-            position: relative;
-            transition: color 0.3s ease;
-            letter-spacing: 0.5px;
-        }
-
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: var(--gradient-1);
-            transition: width 0.3s ease;
-            border-radius: 2px;
-        }
-
-        .nav-links a:hover,
-        .nav-links a.active {
-            color: var(--text-primary);
-        }
-
-        .nav-links a:hover::after,
-        .nav-links a.active::after {
-            width: 100%;
-        }
-
-        .nav-status {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.8rem;
-            color: var(--accent-secondary);
-        }
-
-        .status-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--accent-secondary);
-            border-radius: 50%;
-            animation: pulse 2s ease infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 212, 170, 0.4); }
-            50% { opacity: 0.7; box-shadow: 0 0 0 8px rgba(0, 212, 170, 0); }
-        }
-
-        /* Mobile menu */        .hamburger {
-            display: none;
-            flex-direction: column;
-            gap: 5px;
-            cursor: pointer;
-            z-index: 1001;
-        }
-
-        .hamburger span {
-            width: 25px;
-            height: 2px;
-            background: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-
-        .hamburger.active span:nth-child(1) { transform: rotate(45deg) translate(5px, 5px); }
-        .hamburger.active span:nth-child(2) { opacity: 0; }
-        .hamburger.active span:nth-child(3) { transform: rotate(-45deg) translate(5px, -5px); }
-
-        /* ===== HERO SECTION ===== */
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 0 60px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-bg-grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image:
-                linear-gradient(rgba(108, 99, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(108, 99, 255, 0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            z-index: 0;
-        }
-
-        .hero-glow {
-            position: absolute;
-            width: 600px;
-            height: 600px;
-            border-radius: 50%;
-            filter: blur(120px);
-            opacity: 0.15;
-            z-index: 0;        }
-
-        .hero-glow-1 {
-            top: -200px;
-            right: -100px;
-            background: var(--accent);
-        }
-
-        .hero-glow-2 {
-            bottom: -200px;
-            left: -100px;
-            background: var(--accent-secondary);
-        }
-
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            max-width: 900px;
-        }
-
-        .hero-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 16px;
-            background: rgba(108, 99, 255, 0.1);
-            border: 1px solid rgba(108, 99, 255, 0.2);
-            border-radius: 50px;
-            font-size: 0.85rem;
-            color: var(--accent-light);
-            margin-bottom: 30px;
-            font-family: 'JetBrains Mono', monospace;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease 2.2s forwards;
-        }
-
-        .hero-badge-dot {
-            width: 6px;
-            height: 6px;
-            background: var(--accent);
-            border-radius: 50%;
-        }
-
-        .hero-title {
-            font-size: clamp(3rem, 7vw, 5.5rem);
-            font-weight: 900;
-            line-height: 1.05;
-            letter-spacing: -3px;
-            margin-bottom: 25px;
-            opacity: 0;            animation: fadeInUp 0.8s ease 2.4s forwards;
-        }
-
-        .hero-title .line {
-            display: block;
-        }
-
-        .hero-title .gradient-text {
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero-description {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            line-height: 1.7;
-            max-width: 550px;
-            margin-bottom: 40px;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease 2.6s forwards;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease 2.8s forwards;
-        }
-
-        .btn-primary {
-            padding: 16px 36px;
-            background: var(--gradient-1);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-primary::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        .btn-primary:hover::before {
-            left: 100%;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 40px var(--accent-glow);
-        }
-
-        .btn-secondary {
-            padding: 16px 36px;
-            background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-secondary:hover {
-            border-color: var(--accent);
-            background: rgba(108, 99, 255, 0.05);
-            transform: translateY(-3px);
-        }
-
-        .hero-visual {
-            position: absolute;
-            right: 60px;
-            top: 50%;
-            transform: translateY(-50%);
-            z-index: 1;
-            opacity: 0;
-            animation: fadeIn 1s ease 3s forwards;        }
-
-        @keyframes fadeIn {
-            to { opacity: 1; }
-        }
-
-        .hero-code-block {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
-            width: 420px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            line-height: 1.8;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-code-block::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: rgba(255,255,255,0.02);
-            border-bottom: 1px solid var(--border);
-        }
-
-        .code-dots {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .code-dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-        }
-
-        .code-dot:nth-child(1) { background: #ff5f57; }
-        .code-dot:nth-child(2) { background: #ffbd2e; }
-        .code-dot:nth-child(3) { background: #28ca41; }
-
-        .code-line {
-            opacity: 0;
-            animation: typeLine 0.5s ease forwards;
-        }
-        .code-line:nth-child(2) { animation-delay: 3.2s; }
-        .code-line:nth-child(3) { animation-delay: 3.4s; }
-        .code-line:nth-child(4) { animation-delay: 3.6s; }
-        .code-line:nth-child(5) { animation-delay: 3.8s; }
-        .code-line:nth-child(6) { animation-delay: 4.0s; }
-        .code-line:nth-child(7) { animation-delay: 4.2s; }
-        .code-line:nth-child(8) { animation-delay: 4.4s; }
-
-        @keyframes typeLine {
-            from { opacity: 0; transform: translateX(-10px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .code-keyword { color: #c792ea; }
-        .code-function { color: #82aaff; }
-        .code-string { color: #c3e88d; }
-        .code-variable { color: #f78c6c; }
-        .code-comment { color: #546e7a; }
-        .code-bracket { color: #89ddff; }
-        .code-number { color: #f78c6c; }
-
-        .hero-stats {
-            display: flex;
-            gap: 50px;
-            margin-top: 60px;
-            opacity: 0;
-            animation: fadeInUp 0.8s ease 3.2s forwards;
-        }
-
-        .stat-item {
-            text-align: left;
-        }
-
-        .stat-number {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: var(--gradient-1);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 5px;
-        }
-        /* ===== SECTION COMMON ===== */
-        section {
-            padding: 120px 60px;
-            position: relative;
-            z-index: 2;
-        }
-
-        .section-header {
-            text-align: center;
-            margin-bottom: 80px;
-        }
-
-        .section-label {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 3px;
-            margin-bottom: 15px;
-            display: block;
-        }
-
-        .section-title {
-            font-size: clamp(2rem, 4vw, 3rem);
-            font-weight: 800;
-            letter-spacing: -2px;
-        }
-
-        .section-divider {
-            width: 60px;
-            height: 4px;
-            background: var(--gradient-1);
-            border-radius: 4px;
-            margin: 20px auto 0;
-        }
-
-        /* ===== ABOUT SECTION ===== */
-        .about {
-            background: var(--bg-secondary);
-        }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 80px;
-            align-items: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .about-image-wrapper {
-            position: relative;
-        }
-
-        .about-image {
-            width: 100%;
-            aspect-ratio: 4/5;
-            background: var(--bg-card);
-            border-radius: 20px;
-            border: 1px solid var(--border);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .about-image-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8rem;
-            background: linear-gradient(135deg, var(--bg-card), var(--bg-card-hover));
-        }
-
-        .about-image-decoration {
-            position: absolute;
-            top: -15px;
-            right: -15px;
-            width: 100%;
-            height: 100%;
-            border: 2px solid var(--accent);
-            border-radius: 20px;
-            z-index: -1;
-            opacity: 0.3;
-        }
-
-        .about-exp-badge {
-            position: absolute;
-            bottom: -20px;
-            left: -20px;
-            background: var(--gradient-1);
-            padding: 20px 25px;
-            border-radius: 16px;
-            text-align: center;
-            z-index: 3;
-        }
-
-        .about-exp-badge .number {
-            font-size: 2rem;
-            font-weight: 800;            display: block;
-        }
-
-        .about-exp-badge .label {
-            font-size: 0.75rem;
-            opacity: 0.9;
-        }
-
-        .about-text h3 {
-            font-size: 1.8rem;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        .about-text p {
-            color: var(--text-secondary);
-            line-height: 1.8;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
-
-        .about-info-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .about-info-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
-        }
-
-        .about-info-item .icon {
-            width: 36px;
-            height: 36px;
-            background: rgba(108, 99, 255, 0.1);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-        }
-
-        .about-info-item .label {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-        .about-info-item .value {
-            font-weight: 600;
-        }
-
-        /* ===== SKILLS SECTION ===== */
-        .skills-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .skills-categories {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-        }
-
-        .skill-category {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 35px;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .skill-category::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--gradient-1);
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
-        }
-
-        .skill-category:hover::before {
-            transform: scaleX(1);
-        }
-
-        .skill-category:hover {
-            border-color: rgba(108, 99, 255, 0.3);
-            transform: translateY(-5px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .skill-category-icon {            width: 50px;
-            height: 50px;
-            background: rgba(108, 99, 255, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-        }
-
-        .skill-category h3 {
-            font-size: 1.2rem;
-            margin-bottom: 20px;
-            font-weight: 700;
-        }
-
-        .skill-item {
-            margin-bottom: 18px;
-        }
-
-        .skill-item:last-child {
-            margin-bottom: 0;
-        }
-
-        .skill-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-
-        .skill-name {
-            font-weight: 500;
-        }
-
-        .skill-percent {
-            color: var(--accent);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.85rem;
-        }
-
-        .skill-bar {
-            height: 6px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-
-        .skill-bar-fill {            height: 100%;
-            background: var(--gradient-1);
-            border-radius: 3px;
-            width: 0;
-            transition: width 1.5s ease;
-        }
-
-        .tech-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .tech-tag {
-            padding: 6px 14px;
-            background: rgba(108, 99, 255, 0.08);
-            border: 1px solid rgba(108, 99, 255, 0.15);
-            border-radius: 50px;
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-            font-family: 'JetBrains Mono', monospace;
-            transition: all 0.3s ease;
-        }
-
-        .tech-tag:hover {
-            background: rgba(108, 99, 255, 0.15);
-            border-color: var(--accent);
-            color: var(--accent-light);
-        }
-
-        /* ===== EXPERIENCE TIMELINE ===== */
-        .experience {
-            background: var(--bg-secondary);
-        }
-
-        .timeline {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 100%;
-            background: var(--border);        }
-
-        .timeline-item {
-            display: flex;
-            justify-content: flex-end;
-            padding-right: 50%;
-            position: relative;
-            margin-bottom: 50px;
-        }
-
-        .timeline-item:nth-child(even) {
-            justify-content: flex-start;
-            padding-right: 0;
-            padding-left: 50%;
-        }
-
-        .timeline-dot {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 16px;
-            height: 16px;
-            background: var(--accent);
-            border-radius: 50%;
-            border: 3px solid var(--bg-secondary);
-            z-index: 2;
-        }
-
-        .timeline-dot::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 2px solid var(--accent);
-            opacity: 0.3;
-            animation: pulse 2s ease infinite;
-        }
-
-        .timeline-content {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 30px;
-            margin: 0 30px;
-            max-width: 400px;
-            transition: all 0.4s ease;            position: relative;
-        }
-
-        .timeline-content:hover {
-            border-color: rgba(108, 99, 255, 0.3);
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .timeline-date {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            color: var(--accent);
-            margin-bottom: 10px;
-        }
-
-        .timeline-content h3 {
-            font-size: 1.2rem;
-            margin-bottom: 5px;
-        }
-
-        .timeline-content h4 {
-            color: var(--accent-secondary);
-            font-size: 0.9rem;
-            font-weight: 500;
-            margin-bottom: 15px;
-        }
-
-        .timeline-content p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.7;
-        }
-
-        .timeline-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin-top: 15px;
-        }
-
-        .timeline-tag {
-            padding: 4px 10px;
-            background: rgba(0, 212, 170, 0.1);
-            border-radius: 50px;
-            font-size: 0.75rem;
-            color: var(--accent-secondary);
-            font-family: 'JetBrains Mono', monospace;
-        }
-        /* ===== PORTFOLIO SECTION ===== */
-        .portfolio-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .portfolio-filters {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 50px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 10px 24px;
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: 50px;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-family: 'Inter', sans-serif;
-        }
-
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-        }
-
-        .portfolio-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-            gap: 30px;
-        }
-
-        .project-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            overflow: hidden;
-            transition: all 0.4s ease;
-            position: relative;
-        }
-
-        .project-card.hidden {            display: none;
-        }
-
-        .project-card:hover {
-            transform: translateY(-8px);
-            border-color: rgba(108, 99, 255, 0.3);
-            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
-        }
-
-        .project-image {
-            width: 100%;
-            height: 220px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-image-bg {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 4rem;
-            transition: transform 0.4s ease;
-        }
-
-        .project-card:hover .project-image-bg {
-            transform: scale(1.05);
-        }
-
-        .project-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(108, 99, 255, 0.8);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-        }
-
-        .project-card:hover .project-overlay {
-            opacity: 1;
-        }
-
-        .project-overlay-btn {            width: 50px;
-            height: 50px;
-            background: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent);
-            font-size: 1.2rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            transform: translateY(20px);
-        }
-
-        .project-card:hover .project-overlay-btn {
-            transform: translateY(0);
-        }
-
-        .project-overlay-btn:hover {
-            background: var(--bg-primary);
-            color: white;
-        }
-
-        .project-info {
-            padding: 25px;
-        }
-
-        .project-category {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 0.75rem;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-        }
-
-        .project-info h3 {
-            font-size: 1.3rem;
-            margin-bottom: 10px;
-            font-weight: 700;
-        }
-
-        .project-info p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .project-tech {            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-        }
-
-        .project-tech span {
-            padding: 4px 10px;
-            background: rgba(108, 99, 255, 0.08);
-            border-radius: 50px;
-            font-size: 0.75rem;
-            color: var(--text-muted);
-            font-family: 'JetBrains Mono', monospace;
-        }
-
-        /* ===== SERVICES SECTION ===== */
-        .services {
-            background: var(--bg-secondary);
-        }
-
-        .services-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .service-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .service-card::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: var(--gradient-1);
-            transform: scaleX(0);
-            transition: transform 0.4s ease;
-        }
-        .service-card:hover::after {
-            transform: scaleX(1);
-        }
-
-        .service-card:hover {
-            transform: translateY(-5px);
-            border-color: rgba(108, 99, 255, 0.3);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        }
-
-        .service-icon {
-            width: 70px;
-            height: 70px;
-            background: rgba(108, 99, 255, 0.1);
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            margin: 0 auto 25px;
-            transition: all 0.4s ease;
-        }
-
-        .service-card:hover .service-icon {
-            background: var(--gradient-1);
-            transform: rotateY(180deg);
-        }
-
-        .service-card h3 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: 700;
-        }
-
-        .service-card p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            line-height: 1.7;
-        }
-
-        /* ===== TESTIMONIALS ===== */
-        .testimonials-container {
-            max-width: 900px;
-            margin: 0 auto;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .testimonials-slider {
-            display: flex;            transition: transform 0.6s ease;
-        }
-
-        .testimonial-card {
-            min-width: 100%;
-            padding: 50px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            text-align: center;
-        }
-
-        .testimonial-quote {
-            font-size: 3rem;
-            color: var(--accent);
-            margin-bottom: 20px;
-        }
-
-        .testimonial-text {
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            line-height: 1.8;
-            font-style: italic;
-            margin-bottom: 30px;
-        }
-
-        .testimonial-author {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 15px;
-        }
-
-        .testimonial-avatar {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: var(--gradient-1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            font-weight: 700;
-        }
-
-        .testimonial-author-info h4 {
-            font-size: 1rem;
-            font-weight: 700;
-        }
-        .testimonial-author-info p {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-        }
-
-        .testimonial-nav {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
-        }
-
-        .testimonial-nav button {
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: var(--bg-card);
-            color: var(--text-primary);
-            cursor: pointer;
-            font-size: 1.2rem;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .testimonial-nav button:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-        }
-
-        .testimonial-dots {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .testimonial-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--border);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .testimonial-dot.active {
-            background: var(--accent);            width: 24px;
-            border-radius: 4px;
-        }
-
-        /* ===== CONTACT SECTION ===== */
-        .contact {
-            background: var(--bg-secondary);
-        }
-
-        .contact-grid {
-            display: grid;
-            grid-template-columns: 1fr 1.5fr;
-            gap: 60px;
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .contact-info {
-            display: flex;
-            flex-direction: column;
-            gap: 30px;
-        }
-
-        .contact-info h3 {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 10px;
-        }
-
-        .contact-info > p {
-            color: var(--text-secondary);
-            line-height: 1.7;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-
-        .contact-item-icon {
-            width: 50px;
-            height: 50px;
-            background: rgba(108, 99, 255, 0.1);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.3rem;
-            flex-shrink: 0;        }
-
-        .contact-item-text .label {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-bottom: 3px;
-        }
-
-        .contact-item-text .value {
-            font-weight: 600;
-        }
-
-        .social-links {
-            display: flex;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        .social-link {
-            width: 45px;
-            height: 45px;
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-
-        .social-link:hover {
-            background: var(--accent);
-            border-color: var(--accent);
-            color: white;
-            transform: translateY(-3px);
-        }
-
-        .contact-form {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 40px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-        .form-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: var(--text-secondary);
-        }
-
-        .form-group input,
-        .form-group textarea {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        .form-group input:focus,
-        .form-group textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-glow);
-        }
-
-        .form-group textarea {
-            height: 140px;
-            resize: vertical;
-        }
-
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-        }
-
-        .form-submit {
-            width: 100%;
-            padding: 16px;
-            background: var(--gradient-1);
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;            font-family: 'Inter', sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .form-submit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 40px var(--accent-glow);
-        }
-
-        /* ===== FOOTER ===== */
-        .footer {
-            padding: 40px 60px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: relative;
-            z-index: 2;
-        }
-
-        .footer-text {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-        }
-
-        .footer-text span {
-            color: var(--accent);
-        }
-
-        .footer-links {
-            display: flex;
-            gap: 30px;
-        }
-
-        .footer-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: color 0.3s ease;
-        }
-
-        .footer-links a:hover {
-            color: var(--accent);
-        }
-
-        /* ===== SCROLL ANIMATIONS ===== */
-        .reveal {            opacity: 0;
-            transform: translateY(40px);
-            transition: all 0.8s ease;
-        }
-
-        .reveal.active {
-            opacity: 1;
-            transform: translateY(0);
-        }
-
-        .reveal-left {
-            opacity: 0;
-            transform: translateX(-40px);
-            transition: all 0.8s ease;
-        }
-
-        .reveal-left.active {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        .reveal-right {
-            opacity: 0;
-            transform: translateX(40px);
-            transition: all 0.8s ease;
-        }
-
-        .reveal-right.active {
-            opacity: 1;
-            transform: translateX(0);
-        }
-
-        /* ===== SCROLL TO TOP ===== */
-        .scroll-top {
-            position: fixed;
-            bottom: 30px;
-            right: 30px;
-            width: 50px;
-            height: 50px;
-            background: var(--gradient-1);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 1.3rem;
-            cursor: pointer;
-            z-index: 999;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            display: flex;            align-items: center;
-            justify-content: center;
-        }
-
-        .scroll-top.visible {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .scroll-top:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 10px 30px var(--accent-glow);
-        }
-
-        /* ===== PROGRESS BAR ===== */
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: var(--gradient-1);
-            z-index: 10000;
-            transition: width 0.1s ease;
-        }
-
-        /* ===== RESPONSIVE ===== */
-        @media (max-width: 1024px) {
-            .hero-visual { display: none; }
-            .about-grid { grid-template-columns: 1fr; gap: 40px; }
-            .contact-grid { grid-template-columns: 1fr; }
-            .timeline::before { left: 20px; }
-            .timeline-item { padding-right: 0; padding-left: 60px; justify-content: flex-start; }
-            .timeline-item:nth-child(even) { padding-left: 60px; }
-            .timeline-dot { left: 20px; }
-            .timeline-content { margin: 0; max-width: 100%; }
-        }
-
-        @media (max-width: 768px) {
-            section { padding: 80px 25px; }
-            .navbar { padding: 15px 25px; }
-            .navbar.scrolled { padding: 12px 25px; }
-            .nav-links { display: none; }
-            .nav-status { display: none; }
-            .hamburger { display: flex; }
-            .nav-links.mobile-open {
-                display: flex;
-                flex-direction: column;
-                position: fixed;
-                top: 0;
-                left: 0;                width: 100%;
-                height: 100vh;
-                background: rgba(10, 10, 15, 0.98);
-                backdrop-filter: blur(20px);
-                align-items: center;
-                justify-content: center;
-                gap: 30px;
-                z-index: 999;
-            }
-            .nav-links.mobile-open a {
-                font-size: 1.5rem;
-            }
-            .hero { padding: 0 25px; }
-            .hero-stats { gap: 30px; }
-            .stat-number { font-size: 1.8rem; }
-            .portfolio-grid { grid-template-columns: 1fr; }
-            .form-row { grid-template-columns: 1fr; }
-            .footer { flex-direction: column; gap: 15px; text-align: center; }
-            .cursor, .cursor-dot { display: none; }
-            body { cursor: auto; }
-            .skills-categories { grid-template-columns: 1fr; }
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Захар — Веб-разработчик</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --off-white: #f5f3ef;
+      --light: #ebe8e2;
+      --mid: #c8c2b8;
+      --dark: #1a1814;
+      --accent: #e05c2a;
+      --accent2: #f0a500;
+      --text: #2a2520;
+      --text-muted: #7a7068;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--off-white);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR ── */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: transform 0.1s ease, width 0.3s, height 0.3s, background 0.3s;
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      width: 38px; height: 38px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: transform 0.18s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      opacity: 0.6;
+    }
+
+    /* ── NOISE ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.5;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px;
+      backdrop-filter: blur(12px);
+      background: rgba(245,243,239,0.85);
+      border-bottom: 1px solid rgba(200,194,184,0.3);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--dark);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      font-size: 0.8rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--text-muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 120px 48px 80px;
+      gap: 48px;
+      align-items: center;
+      position: relative;
+    }
+    .hero-left { position: relative; z-index: 1; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 28px;
+    }
+    .hero-tag::before {
+      content: ''; width: 28px; height: 2px; background: var(--accent);
+    }
+    .hero-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 10vw, 9rem);
+      line-height: 0.92;
+      color: var(--dark);
+      letter-spacing: 0.02em;
+      margin-bottom: 24px;
+    }
+    .hero-name span {
+      display: block;
+      -webkit-text-stroke: 2px var(--dark);
+      color: transparent;
+    }
+    .hero-desc {
+      font-size: 1.05rem; font-weight: 400; line-height: 1.7;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin-bottom: 44px;
+    }
+    .hero-desc strong { color: var(--text); font-weight: 600; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--dark);
+      color: var(--white);
+      padding: 16px 32px;
+      font-size: 0.82rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .hero-cta:hover { background: var(--accent); transform: translateY(-2px); }
+    .hero-cta svg { transition: transform 0.2s; }
+    .hero-cta:hover svg { transform: translateX(4px); }
+
+    .hero-right {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; gap: 20px;
+      align-items: flex-end;
+    }
+    .hero-card {
+      background: var(--white);
+      border: 1px solid var(--light);
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 360px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.7s ease both;
+    }
+    .hero-card:nth-child(2) { animation-delay: 0.15s; margin-right: -24px; }
+    .hero-card:nth-child(3) { animation-delay: 0.3s; }
+    .hero-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--accent);
+    }
+    .card-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; color: var(--light);
+      line-height: 1; margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 0.9rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--dark); margin-bottom: 6px;
+    }
+    .card-text {
+      font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;
+    }
+
+    /* ── BIG TEXT ── */
+    .marquee-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--light);
+      border-bottom: 1px solid var(--light);
+      padding: 18px 0;
+      background: var(--white);
+    }
+    .marquee {
+      display: flex; gap: 48px;
+      width: max-content;
+      animation: marquee 18s linear infinite;
+    }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; letter-spacing: 0.08em;
+      color: var(--mid); white-space: nowrap;
+    }
+    .marquee-item span { color: var(--accent); margin: 0 8px; }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 48px; position: relative; }
+    .section-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--light); max-width: 60px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      line-height: 1; color: var(--dark);
+      margin-bottom: 56px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── SERVICES ── */
+    .services { background: var(--dark); }
+    .services .section-label { color: var(--accent2); }
+    .services .section-label::after { background: rgba(255,255,255,0.1); }
+    .services .section-title { color: var(--white); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .service-item {
+      background: rgba(255,255,255,0.04);
+      padding: 44px 36px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.3s, transform 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .service-item:hover { background: rgba(255,255,255,0.08); transform: translateY(-4px); }
+    .service-icon {
+      font-size: 2rem; margin-bottom: 20px; display: block;
+    }
+    .service-name {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--white); margin-bottom: 12px;
+    }
+    .service-desc {
+      font-size: 0.85rem; color: rgba(255,255,255,0.45); line-height: 1.7;
+    }
+    .service-num {
+      position: absolute; top: 20px; right: 24px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem; color: rgba(255,255,255,0.04);
+    }
+
+    /* ── WORKS ── */
+    .works { background: var(--off-white); }
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .work-card {
+      background: var(--white);
+      border: 1px solid var(--light);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .work-card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px rgba(26,24,20,0.1); }
+    .work-card:first-child { grid-column: span 2; }
+    .work-img {
+      width: 100%; aspect-ratio: 16/7;
+      background: linear-gradient(135deg, var(--dark) 0%, #3a3530 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: rgba(255,255,255,0.06);
+      letter-spacing: 0.05em;
+      position: relative; overflow: hidden;
+    }
+    .work-card:nth-child(2) .work-img { aspect-ratio: 4/3; background: linear-gradient(135deg, #1e3a2f 0%, #2d5a45 100%); }
+    .work-card:nth-child(3) .work-img { aspect-ratio: 4/3; background: linear-gradient(135deg, #2a1e3a 0%, #4a2d6a 100%); }
+    .work-emoji {
+      position: absolute; font-size: 4rem;
+      opacity: 0.5;
+    }
+    .work-info { padding: 28px 32px; }
+    .work-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .work-tag {
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--accent); background: rgba(224,92,42,0.08);
+      padding: 4px 10px;
+    }
+    .work-name {
+      font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 8px;
+    }
+    .work-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── ABOUT ── */
+    .about {
+      background: var(--white);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .about-visual {
+      position: relative; height: 480px;
+    }
+    .about-box {
+      position: absolute;
+      background: var(--dark); color: var(--white);
+      padding: 40px;
+      width: 320px;
+    }
+    .about-box:first-child { top: 0; left: 0; }
+    .about-box:nth-child(2) {
+      background: var(--accent);
+      width: 200px; height: 200px;
+      bottom: 0; right: 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center;
+    }
+    .about-box-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem; line-height: 1;
+    }
+    .about-box-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      opacity: 0.8;
+    }
+    .about-box-text {
+      font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.7; margin-top: 12px;
+    }
+    .about-text p {
+      font-size: 1rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 24px;
+    }
+    .about-text p strong { color: var(--text); }
+    .skills-list {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px;
+    }
+    .skill-pill {
+      font-size: 0.78rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 8px 16px;
+      border: 1.5px solid var(--light);
+      color: var(--text-muted);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .skill-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── CONTACT ── */
+    .contact {
+      background: var(--dark);
+      text-align: center;
+      padding: 120px 48px;
+    }
+    .contact .section-label { justify-content: center; color: var(--accent2); }
+    .contact .section-label::after { display: none; }
+    .contact .section-title { color: var(--white); }
+    .contact-desc {
+      font-size: 1.05rem; color: rgba(255,255,255,0.45);
+      max-width: 480px; margin: -36px auto 52px;
+      line-height: 1.7;
+    }
+    .contact-links {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 36px;
+      font-size: 0.82rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      text-decoration: none;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .contact-btn-primary {
+      background: var(--accent); color: var(--white);
+    }
+    .contact-btn-primary:hover { background: #c44d22; transform: translateY(-2px); }
+    .contact-btn-secondary {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+    }
+    .contact-btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #111009;
+      padding: 28px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.3);
+    }
+    .footer-copy {
+      font-size: 0.75rem; color: rgba(255,255,255,0.2);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    .hero-left { animation: fadeUp 0.8s ease both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; }
+      .hero-right { align-items: flex-start; }
+      .hero-card:nth-child(2) { margin-right: 0; }
+      section { padding: 72px 24px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .works-grid { grid-template-columns: 1fr; }
+      .work-card:first-child { grid-column: span 1; }
+      .about { grid-template-columns: 1fr; gap: 40px; }
+      .about-visual { height: auto; display: flex; gap: 16px; flex-wrap: wrap; }
+      .about-box { position: static; width: 100%; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
 </head>
 <body>
-    <!-- Loader -->
-    <div class="loader-wrapper" id="loader">
-        <div class="loader">
-            <div class="loader-text"><loading /></div>
-            <div class="loader-bar">
-                <div class="loader-bar-fill"></div>
-            </div>
-        </div>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">ЗА<span>Х</span>АР</a>
+    <ul class="nav-links">
+      <li><a href="#services">Услуги</a></li>
+      <li><a href="#works">Работы</a></li>
+      <li><a href="#about">О себе</a></li>
+      <li><a href="#contact">Контакт</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">Веб-разработчик · Фриланс</div>
+      <h1 class="hero-name">
+        ЗАХАР
+        <span>ПРОЕКТ</span>
+      </h1>
+      <p class="hero-desc">
+        Создаю <strong>современные сайты и Telegram-приложения</strong>, которые работают быстро, выглядят сильно и решают реальные задачи бизнеса.
+      </p>
+      <a href="#contact" class="hero-cta">
+        Обсудить проект
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
     </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="card-num">01</div>
+        <div class="card-title">Telegram Mini Apps</div>
+        <div class="card-text">Встроенные приложения прямо внутри Telegram — удобно, быстро, без App Store.</div>
+      </div>
+      <div class="hero-card">
+        <div class="card-num">02</div>
+        <div class="card-title">Боты и автоматизация</div>
+        <div class="card-text">Умные боты, которые работают 24/7 и экономят ваше время.</div>
+      </div>
+      <div class="hero-card">
+        <div class="card-num">03</div>
+        <div class="card-title">Сайты под ключ</div>
+        <div class="card-text">От лендинга до полноценного веб-приложения — чистый код, стильный дизайн.</div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Progress Bar -->
-    <div class="progress-bar" id="progressBar"></div>
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee">
+      <span class="marquee-item">WEB DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">TELEGRAM MINI APP <span>✦</span></span>
+      <span class="marquee-item">BOT DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">FRONTEND <span>✦</span></span>
+      <span class="marquee-item">CLEAN CODE <span>✦</span></span>
+      <span class="marquee-item">WEB DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">TELEGRAM MINI APP <span>✦</span></span>
+      <span class="marquee-item">BOT DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">FRONTEND <span>✦</span></span>
+      <span class="marquee-item">CLEAN CODE <span>✦</span></span>
+    </div>
+  </div>
 
-    <!-- Custom Cursor -->
-    <div class="cursor" id="cursor"></div>
-    <div class="cursor-dot" id="cursorDot"></div>
+  <!-- SERVICES -->
+  <section class="services reveal" id="services">
+    <div class="section-label">Чем я занимаюсь</div>
+    <div class="section-title">УСЛУГИ</div>
+    <div class="services-grid">
+      <div class="service-item">
+        <div class="service-num">01</div>
+        <span class="service-icon">🌐</span>
+        <div class="service-name">Сайты под ключ</div>
+        <div class="service-desc">Лендинги, корпоративные сайты, портфолио. Адаптивная вёрстка, быстрая загрузка, SEO-оптимизация.</div>
+      </div>
+      <div class="service-item">
+        <div class="service-num">02</div>
+        <span class="service-icon">📱</span>
+        <div class="service-name">Telegram Mini Apps</div>
+        <div class="service-desc">Мини-приложения внутри Telegram: магазины, сервисы, игры, личные кабинеты.</div>
+      </div>
+      <div class="service-item">
+        <div class="service-num">03</div>
+        <span class="service-icon">🤖</span>
+        <div class="service-name">Telegram-боты</div>
+        <div class="service-desc">Автоответы, воронки продаж, интеграция с API — боты для любого бизнеса.</div>
+      </div>
+    </div>
+  </section>
 
-    <!-- Particles -->
-    <canvas id="particles-canvas"></canvas>
-
-    <!-- Navigation -->
-    <nav class="navbar" id="navbar">
-        <div class="nav-logo">AV<span>.</span></div>
-        <ul class="nav-links" id="navLinks">
-            <li><a href="#hero" class="active">Главная</a></li>            <li><a href="#about">Обо мне</a></li>
-            <li><a href="#skills">Навыки</a></li>
-            <li><a href="#experience">Опыт</a></li>
-            <li><a href="#portfolio">Портфолио</a></li>
-            <li><a href="#contact">Контакты</a></li>
-        </ul>
-        <div class="nav-status">
-            <div class="status-dot"></div>
-            Доступен для работы
+  <!-- WORKS -->
+  <section class="works reveal" id="works">
+    <div class="section-label">Портфолио</div>
+    <div class="section-title">МОИ РАБОТЫ</div>
+    <div class="works-grid">
+      <div class="work-card">
+        <div class="work-img">
+          MINI APP
+          <span class="work-emoji">📱</span>
         </div>
-        <div class="hamburger" id="hamburger">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="work-info">
+          <div class="work-tags">
+            <span class="work-tag">Telegram</span>
+            <span class="work-tag">Mini App</span>
+            <span class="work-tag">JavaScript</span>
+          </div>
+          <div class="work-name">Telegram Mini App</div>
+          <div class="work-desc">Полноценное приложение внутри Telegram с удобным интерфейсом и интеграцией с API.</div>
         </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section class="hero" id="hero">
-        <div class="hero-bg-grid"></div>
-        <div class="hero-glow hero-glow-1"></div>
-        <div class="hero-glow hero-glow-2"></div>
-        <div class="hero-content">
-            <div class="hero-badge">
-                <div class="hero-badge-dot"></div>
-                Full-Stack Developer
-            </div>
-            <h1 class="hero-title">
-                <span class="line">Привет, я</span>
-                <span class="line gradient-text">Алексей Волков</span>
-            </h1>
-            <p class="hero-description">
-                Создаю современные веб-приложения и цифровые решения,
-                которые объединяют красивый дизайн с мощной функциональностью.
-            </p>
-            <div class="hero-buttons">
-                <a href="#portfolio" class="btn-primary">
-                    Смотреть работы →
-                </a>
-                <a href="#contact" class="btn-secondary">
-                    Связаться со мной
-                </a>
-            </div>
-            <div class="hero-stats">
-                <div class="stat-item">
-                    <div class="stat-number" data-count="50">0</div>
-                    <div class="stat-label">Проектов</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-count="5">0</div>                    <div class="stat-label">Лет опыта</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" data-count="30">0</div>
-                    <div class="stat-label">Клиентов</div>
-                </div>
-            </div>
+      </div>
+      <div class="work-card">
+        <div class="work-img">
+          BOT
+          <span class="work-emoji">🤖</span>
         </div>
-        <div class="hero-visual">
-            <div class="hero-code-block">
-                <div class="code-dots">
-                    <div class="code-dot"></div>
-                    <div class="code-dot"></div>
-                    <div class="code-dot"></div>
-                </div>
-                <div class="code-line"><span class="code-keyword">const</span> <span class="code-variable">developer</span> <span class="code-bracket">=</span> <span class="code-bracket">{</span></div>
-                <div class="code-line">  <span class="code-function">name</span>: <span class="code-string">'Алексей Волков'</span>,</div>
-                <div class="code-line">  <span class="code-function">role</span>: <span class="code-string">'Full-Stack Dev'</span>,</div>
-                <div class="code-line">  <span class="code-function">skills</span>: <span class="code-bracket">[</span><span class="code-string">'React'</span>, <span class="code-string">'Node'</span>, <span class="code-string">'TS'</span><span class="code-bracket">]</span>,</div>
-                <div class="code-line">  <span class="code-function">passion</span>: <span class="code-string">'Создавать'</span>,</div>
-                <div class="code-line">  <span class="code-function">coffee</span>: <span class="code-number">Infinity</span>,</div>
-                <div class="code-line"><span class="code-bracket">}</span>;</div>
-            </div>
+        <div class="work-info">
+          <div class="work-tags">
+            <span class="work-tag">Telegram Bot</span>
+            <span class="work-tag">Python</span>
+          </div>
+          <div class="work-name">Telegram-бот</div>
+          <div class="work-desc">Автоматизированный бот с командами, меню и подключённой базой данных.</div>
         </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="about" id="about">
-        <div class="section-header reveal">
-            <span class="section-label">// Обо мне</span>
-            <h2 class="section-title">Кто я такой?</h2>
-            <div class="section-divider"></div>
+      </div>
+      <div class="work-card">
+        <div class="work-img">
+          WEB
+          <span class="work-emoji">🌐</span>
         </div>
-        <div class="about-grid">
-            <div class="about-image-wrapper reveal-left">
-                <div class="about-image">
-                    <div class="about-image-placeholder">👨‍💻</div>
-                </div>
-                <div class="about-image-decoration"></div>
-                <div class="about-exp-badge">
-                    <span class="number">5+</span>
-                    <span class="label">лет опыта</span>
-                </div>
-            </div>
-            <div class="about-text reveal-right">
-                <h3>Full-Stack разработчик из Москвы</h3>
-                <p>
-                    Я — увлечённый разработчик с более чем 5-летним опытом создания
-                    веб-приложений. Специализируюсь на React, Node.js и TypeScript,
-                    создавая масштабируемые и производительные решения.                </p>
-                <p>
-                    Мой подход — это сочетание чистого кода, продуманной архитектуры
-                    и внимания к деталям UX. Каждый проект для меня — это возможность
-                    создать что-то выдающееся.
-                </p>
-                <div class="about-info-grid">
-                    <div class="about-info-item">
-                        <div class="icon">📍</div>
-                        <div>
-                            <div class="label">Локация</div>
-                            <div class="value">Москва, Россия</div>
-                        </div>
-                    </div>
-                    <div class="about-info-item">
-                        <div class="icon">🎓</div>
-                        <div>
-                            <div class="label">Образование</div>
-                            <div class="value">МГУ, CS</div>
-                        </div>
-                    </div>
-                    <div class="about-info-item">
-                        <div class="icon">💼</div>
-                        <div>
-                            <div class="label">Опыт</div>
-                            <div class="value">5+ лет</div>
-                        </div>
-                    </div>
-                    <div class="about-info-item">
-                        <div class="icon">🌐</div>
-                        <div>
-                            <div class="label">Языки</div>
-                            <div class="value">RU / EN</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="work-info">
+          <div class="work-tags">
+            <span class="work-tag">HTML/CSS</span>
+            <span class="work-tag">JavaScript</span>
+          </div>
+          <div class="work-name">Веб-проект</div>
+          <div class="work-desc">Современный адаптивный сайт с анимациями и чистым кодом.</div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <!-- Skills Section -->
-    <section class="skills" id="skills">
-        <div class="section-header reveal">
-            <span class="section-label">// Навыки</span>
-            <h2 class="section-title">Мой стек технологий</h2>
-            <div class="section-divider"></div>
-        </div>
-        <div class="skills-container">
-            <div class="skills-categories">
-                <div class="skill-category reveal">                    <div class="skill-category-icon">🎨</div>
-                    <h3>Frontend</h3>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">React / Next.js</span>
-                            <span class="skill-percent">95%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="95"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">TypeScript</span>
-                            <span class="skill-percent">90%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="90"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">CSS / Tailwind / SCSS</span>
-                            <span class="skill-percent">92%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="92"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">Vue.js</span>
-                            <span class="skill-percent">75%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="75"></div>
-                        </div>
-                    </div>
-                    <div class="tech-tags">
-                        <span class="tech-tag">Redux</span>
-                        <span class="tech-tag">Zustand</span>
-                        <span class="tech-tag">Framer Motion</span>
-                        <span class="tech-tag">GSAP</span>
-                    </div>
-                </div>
+  <!-- ABOUT -->
+  <section class="about reveal" id="about">
+    <div class="about-visual">
+      <div class="about-box">
+        <div class="about-box-num" style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.1em;margin-bottom:8px;opacity:0.5;">О РАЗРАБОТЧИКЕ</div>
+        <p class="about-box-text">Захар — веб-разработчик, специализирующийся на создании сайтов и Telegram-продуктов. Умею превращать идеи в работающие цифровые решения с чистым кодом и вниманием к деталям.</p>
+      </div>
+      <div class="about-box" style="position:absolute;bottom:0;right:0;">
+        <div class="about-box-num">∞</div>
+        <div class="about-box-label">Идей в работе</div>
+      </div>
+    </div>
+    <div class="about-text">
+      <div class="section-label">О себе</div>
+      <div class="section-title" style="font-size:2.8rem;margin-bottom:32px;">КТО Я</div>
+      <p>Я <strong>веб-разработчик-фрилансер</strong>, который делает сайты, Telegram Mini Apps и ботов. Работаю с клиентами напрямую — без лишних посредников.</p>
+      <p>Мой подход: <strong>понять задачу → предложить решение → сделать качественно</strong>. Для меня важны сроки, чистый код и результат, который нравится заказчику.</p>
+      <div class="skills-list">
+        <span class="skill-pill">HTML / CSS</span>
+        <span class="skill-pill">JavaScript</span>
+        <span class="skill-pill">Telegram API</span>
+        <span class="skill-pill">Bot Development</span>
+        <span class="skill-pill">Mini Apps</span>
+        <span class="skill-pill">Responsive Design</span>
+      </div>
+    </div>
+  </section>
 
-                <div class="skill-category reveal">
-                    <div class="skill-category-icon">⚙️</div>
-                    <h3>Backend</h3>
-                    <div class="skill-item">                        <div class="skill-info">
-                            <span class="skill-name">Node.js / Express</span>
-                            <span class="skill-percent">90%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="90"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">Python / Django</span>
-                            <span class="skill-percent">80%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="80"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">PostgreSQL / MongoDB</span>
-                            <span class="skill-percent">85%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="85"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">GraphQL / REST API</span>
-                            <span class="skill-percent">88%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="88"></div>
-                        </div>
-                    </div>
-                    <div class="tech-tags">
-                        <span class="tech-tag">Redis</span>
-                        <span class="tech-tag">Docker</span>
-                        <span class="tech-tag">Prisma</span>
-                        <span class="tech-tag">Socket.io</span>
-                    </div>
-                </div>
+  <!-- CONTACT -->
+  <section class="contact reveal" id="contact">
+    <div class="section-label">Связаться</div>
+    <div class="section-title">ДАВАЙТЕ<br>РАБОТАТЬ</div>
+    <p class="contact-desc">Есть проект или идея? Напишите — обсудим детали, сроки и стоимость.</p>
+    <div class="contact-links">
+      <a href="mailto:zahar.proekt76@mail.ru" class="contact-btn contact-btn-primary">
+        ✉ Написать на почту
+      </a>
+      <a href="https://t.me/zahar_proekt76" class="contact-btn contact-btn-secondary" target="_blank">
+        ✈ Telegram
+      </a>
+    </div>
+  </section>
 
-                <div class="skill-category reveal">
-                    <div class="skill-category-icon">🛠️</div>
-                    <h3>Tools & DevOps</h3>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">Git / GitHub Actions</span>
-                            <span class="skill-percent">92%</span>                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="92"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">AWS / Vercel</span>
-                            <span class="skill-percent">78%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="78"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">Figma / UI Design</span>
-                            <span class="skill-percent">85%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="85"></div>
-                        </div>
-                    </div>
-                    <div class="skill-item">
-                        <div class="skill-info">
-                            <span class="skill-name">CI/CD / Testing</span>
-                            <span class="skill-percent">80%</span>
-                        </div>
-                        <div class="skill-bar">
-                            <div class="skill-bar-fill" data-width="80"></div>
-                        </div>
-                    </div>
-                    <div class="tech-tags">
-                        <span class="tech-tag">Webpack</span>
-                        <span class="tech-tag">Jest</span>
-                        <span class="tech-tag">Linux</span>
-                        <span class="tech-tag">Nginx</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">ЗАХАР</div>
+    <div class="footer-copy">© 2024 · Веб-разработчик · Фриланс</div>
+  </footer>
 
-    <!-- Experience Section -->
-    <section class="experience" id="experience">
-        <div class="section-header reveal">
-            <span class="section-label">// Опыт</span>
-            <h2 class="section-title">Мой профессиональный путь</h2>
-            <div class="section-divider"></div>
-        </div>        <div class="timeline">
-            <div class="timeline-item reveal">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-date">2023 — Настоящее время</div>
-                    <h3>Senior Full-Stack Developer</h3>
-                    <h4>TechCorp Inc.</h4>
-                    <p>Руковожу командой из 6 разработчиков. Архитектура микросервисов, оптимизация производительности, код-ревью.</p>
-                    <div class="timeline-tags">
-                        <span class="timeline-tag">React</span>
-                        <span class="timeline-tag">Node.js</span>
-                        <span class="timeline-tag">AWS</span>
-                    </div>
-                </div>
-            </div>
-            <div class="timeline-item reveal">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-date">2021 — 2023</div>
-                    <h3>Full-Stack Developer</h3>
-                    <h4>Digital Agency Pro</h4>
-                    <p>Разработка 20+ коммерческих проектов. Создание SPA, интеграция платёжных систем, REST API.</p>
-                    <div class="timeline-tags">
-                        <span class="timeline-tag">Next.js</span>
-                        <span class="timeline-tag">TypeScript</span>
-                        <span class="timeline-tag">PostgreSQL</span>
-                    </div>
-                </div>
-            </div>
-            <div class="timeline-item reveal">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-date">2019 — 2021</div>
-                    <h3>Frontend Developer</h3>
-                    <h4>StartupHub</h4>
-                    <p>Разработка интерфейсов для SaaS-платформы. Работа с React, Redux, интеграция с бэкендом.</p>
-                    <div class="timeline-tags">
-                        <span class="timeline-tag">React</span>
-                        <span class="timeline-tag">Redux</span>
-                        <span class="timeline-tag">SCSS</span>
-                    </div>
-                </div>
-            </div>
-            <div class="timeline-item reveal">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                    <div class="timeline-date">2018 — 2019</div>
-                    <h3>Junior Developer</h3>
-                    <h4>WebStudio</h4>
-                    <p>Первые коммерческие проекты. Вёрстка, JavaScript, работа с CMS WordPress.</p>                    <div class="timeline-tags">
-                        <span class="timeline-tag">HTML/CSS</span>
-                        <span class="timeline-tag">JavaScript</span>
-                        <span class="timeline-tag">WordPress</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    function animateCursor() {
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+    document.querySelectorAll('a,button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '20px'; cursor.style.height = '20px';
+        ring.style.width = '56px'; ring.style.height = '56px';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '12px'; cursor.style.height = '12px';
+        ring.style.width = '38px'; ring.style.height = '38px';
+      });
+    });
 
-    <!-- Services Section -->
-    <section class="services" id="services">
-        <div class="section-header reveal">
-            <span class="section-label">// Услуги</span>
-            <h2 class="section-title">Что я могу сделать</h2>
-            <div class="section-divider"></div>
-        </div>
-        <div class="services-grid">
-            <div class="service-card reveal">
-                <div class="service-icon">🌐</div>
-                <h3>Веб-разработка</h3>
-                <p>Создание современных веб-приложений с использованием React, Next.js и Node.js</p>
-            </div>
-            <div class="service-card reveal">
-                <div class="service-icon">📱</div>
-                <h3>Мобильная разработка</h3>
-                <p>Кроссплатформенные мобильные приложения на React Native с нативной производительностью</p>
-            </div>
-            <div class="service-card reveal">
-                <div class="service-icon">🎨</div>
-                <h3>UI/UX Дизайн</h3>
-                <p>Проектирование интуитивных интерфейсов в Figma с фокусом на пользовательский опыт</p>
-            </div>
-            <div class="service-card reveal">
-                <div class="service-icon">⚡</div>
-                <h3>Оптимизация</h3>
-                <p>Аудит и оптимизация производительности существующих приложений, SEO, Core Web Vitals</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Portfolio Section -->
-    <section class="portfolio" id="portfolio">
-        <div class="section-header reveal">
-            <span class="section-label">// Портфолио</span>
-            <h2 class="section-title">Избранные проекты</h2>
-            <div class="section-divider"></div>
-        </div>
-        <div class="portfolio-container">
-            <div class="portfolio-filters reveal">                <button class="filter-btn active" data-filter="all">Все</button>
-                <button class="filter-btn" data-filter="web">Веб-приложения</button>
-                <button class="filter-btn" data-filter="mobile">Мобильные</button>
-                <button class="filter-btn" data-filter="design">Дизайн</button>
-            </div>
-            <div class="portfolio-grid">
-                <div class="project-card reveal" data-category="web">
-                    <div class="project-image">
-                        <div class="project-image-bg" style="background: linear-gradient(135deg, #667eea, #764ba2);">🛒</div>
-                        <div class="project-overlay">
-                            <a href="#" class="project-overlay-btn">🔗</a>
-                            <a href="#" class="project-overlay-btn">📂</a>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-category">Веб-приложение</div>
-                        <h3>E-Commerce Platform</h3>
-                        <p>Полнофункциональная платформа электронной коммерции с админ-панелью и аналитикой</p>
-                        <div class="project-tech">
-                            <span>Next.js</span>
-                            <span>Stripe</span>
-                            <span>PostgreSQL</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card reveal" data-category="mobile">
-                    <div class="project-image">
-                        <div class="project-image-bg" style="background: linear-gradient(135deg, #f093fb, #f5576c);">📱</div>
-                        <div class="project-overlay">
-                            <a href="#" class="project-overlay-btn">🔗</a>
-                            <a href="#" class="project-overlay-btn">📂</a>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-category">Мобильное приложение</div>
-                        <h3>Fitness Tracker</h3>
-                        <p>Мобильное приложение для отслеживания тренировок с AI-рекомендациями</p>
-                        <div class="project-tech">
-                            <span>React Native</span>
-                            <span>Firebase</span>
-                            <span>TensorFlow</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card reveal" data-category="web">
-                    <div class="project-image">
-                        <div class="project-image-bg" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">💬</div>
-                        <div class="project-overlay">                            <a href="#" class="project-overlay-btn">🔗</a>
-                            <a href="#" class="project-overlay-btn">📂</a>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-category">Веб-приложение</div>
-                        <h3>Real-time Chat</h3>
-                        <p>Мессенджер с видеозвонками, шифрованием и интеграцией с AI-ассистентом</p>
-                        <div class="project-tech">
-                            <span>React</span>
-                            <span>Socket.io</span>
-                            <span>WebRTC</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card reveal" data-category="design">
-                    <div class="project-image">
-                        <div class="project-image-bg" style="background: linear-gradient(135deg, #a8edea, #fed6e3);">🎨</div>
-                        <div class="project-overlay">
-                            <a href="#" class="project-overlay-btn">🔗</a>
-                            <a href="#" class="project-overlay-btn">📂</a>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-category">UI/UX Дизайн</div>
-                        <h3>Banking Dashboard</h3>
-                        <p>Дизайн дашборда для финтех-платформы с визуализацией данных</p>
-                        <div class="project-tech">
-                            <span>Figma</span>
-                            <span>Prototyping</span>
-                            <span>D3.js</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card reveal" data-category="web">
-                    <div class="project-image">
-                        <div class="project-image-bg" style="background: linear-gradient(135deg, #fccb90, #d57eeb);">📊</div>
-                        <div class="project-overlay">
-                            <a href="#" class="project-overlay-btn">🔗</a>
-                            <a href="#" class="project-overlay-btn">📂</a>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-category">Веб-приложение</div>
-                        <h3>Analytics Platform</h3>
-                        <p>Платформа бизнес-аналитики с кастомными отчётами и дашбордами</p>
-                        <div class="project-tech">
-                            <span>Vue.js</span>                            <span>Python</span>
-                            <span>ClickHouse</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="project-card reveal" data-category="mobile">
-                    <div class="project-image">
-                        <div class="project-image-bg" style="background: linear-gradient(135deg, #89f7fe, #66a6ff);">🍕</div>
-                        <div class="project-overlay">
-                            <a href="#" class="project-overlay-btn">🔗</a>
-                            <a href="#" class="project-overlay-btn">📂</a>
-                        </div>
-                    </div>
-                    <div class="project-info">
-                        <div class="project-category">Мобильное приложение</div>
-                        <h3>Food Delivery</h3>
-                        <p>Приложение доставки еды с отслеживанием курьера в реальном времени</p>
-                        <div class="project-tech">
-                            <span>React Native</span>
-                            <span>Node.js</span>
-                            <span>Maps API</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials" id="testimonials">
-        <div class="section-header reveal">
-            <span class="section-label">// Отзывы</span>
-            <h2 class="section-title">Что говорят клиенты</h2>
-            <div class="section-divider"></div>
-        </div>
-        <div class="testimonials-container reveal">
-            <div class="testimonials-slider" id="testimonialsSlider">
-                <div class="testimonial-card">
-                    <div class="testimonial-quote">❝</div>
-                    <p class="testimonial-text">
-                        Алексей — один из лучших разработчиков, с которыми я работал.
-                        Его внимание к деталям и способность решать сложные задачи
-                        просто впечатляет. Рекомендую!
-                    </p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">ИС</div>
-                        <div class="testimonial-author-info">
-                            <h4>Игорь Смирнов</h4>
-                            <p>CEO, TechStartup</p>                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-quote">❝</div>
-                    <p class="testimonial-text">
-                        Работа с Алексеем превзошла все ожидания. Проект был сдан
-                        вовремя и с превосходным качеством. Его экспертиза в React
-                        и Node.js на высшем уровне.
-                    </p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">МК</div>
-                        <div class="testimonial-author-info">
-                            <h4>Мария Козлова</h4>
-                            <p>Product Manager, Digital Corp</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="testimonial-card">
-                    <div class="testimonial-quote">❝</div>
-                    <p class="testimonial-text">
-                        Профессиональный подход, отличная коммуникация и потрясающий
-                        результат. Алексей создал для нас платформу, которая увеличила
-                        конверсию на 40%.
-                    </p>
-                    <div class="testimonial-author">
-                        <div class="testimonial-avatar">ДП</div>
-                        <div class="testimonial-author-info">
-                            <h4>Дмитрий Петров</h4>
-                            <p>Founder, E-Shop</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="testimonial-nav">
-                <button id="prevTestimonial">←</button>
-                <button id="nextTestimonial">→</button>
-            </div>
-            <div class="testimonial-dots" id="testimonialDots">
-                <div class="testimonial-dot active" data-index="0"></div>
-                <div class="testimonial-dot" data-index="1"></div>
-                <div class="testimonial-dot" data-index="2"></div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="contact" id="contact">
-        <div class="section-header reveal">
-            <span class="section-label">// Контакты</span>            <h2 class="section-title">Давайте работать вместе</h2>
-            <div class="section-divider"></div>
-        </div>
-        <div class="contact-grid">
-            <div class="contact-info reveal-left">
-                <h3>Свяжитесь со мной</h3>
-                <p>
-                    Готов обсудить ваш проект. Напишите мне, и я отвечу
-                    в течение 24 часов.
-                </p>
-                <div class="contact-item">
-                    <div class="contact-item-icon">📧</div>
-                    <div class="contact-item-text">
-                        <div class="label">Email</div>
-                        <div class="value">alex@volkov.dev</div>
-                    </div>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-item-icon">📱</div>
-                    <div class="contact-item-text">
-                        <div class="label">Телефон</div>
-                        <div class="value">+7 (999) 123-45-67</div>
-                    </div>
-                </div>
-                <div class="contact-item">
-                    <div class="contact-item-icon">📍</div>
-                    <div class="contact-item-text">
-                        <div class="label">Локация</div>
-                        <div class="value">Москва, Россия</div>
-                    </div>
-                </div>
-                <div class="social-links">
-                    <a href="#" class="social-link">GH</a>
-                    <a href="#" class="social-link">LI</a>
-                    <a href="#" class="social-link">TG</a>
-                    <a href="#" class="social-link">TW</a>
-                </div>
-            </div>
-            <form class="contact-form reveal-right" id="contactForm">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Имя</label>
-                        <input type="text" placeholder="Ваше имя" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" placeholder="your@email.com" required>
-                    </div>
-                </div>
-                <div class="form-group">                    <label>Тема</label>
-                    <input type="text" placeholder="Тема сообщения">
-                </div>
-                <div class="form-group">
-                    <label>Сообщение</label>
-                    <textarea placeholder="Расскажите о вашем проекте..."></textarea>
-                </div>
-                <button type="submit" class="form-submit">
-                    Отправить сообщение →
-                </button>
-            </form>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="footer-text">
-            © 2024 <span>Алексей Волков</span>. Все права защищены.
-        </div>
-        <div class="footer-links">
-            <a href="#">GitHub</a>
-            <a href="#">LinkedIn</a>
-            <a href="#">Telegram</a>
-        </div>
-    </footer>
-
-    <!-- Scroll to Top -->
-    <button class="scroll-top" id="scrollTop">↑</button>
-
-    <script>
-        // ===== LOADER =====
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                document.getElementById('loader').classList.add('hidden');
-            }, 2200);
-        });
-
-        // ===== CUSTOM CURSOR =====
-        const cursor = document.getElementById('cursor');
-        const cursorDot = document.getElementById('cursorDot');
-
-        document.addEventListener('mousemove', (e) => {
-            cursor.style.left = e
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.12 });
+    reveals.forEach(r => observer.observe(r));
+  </script>
+</body>
+</html>
