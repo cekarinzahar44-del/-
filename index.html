@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Захар — Веб-разработчик</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --white: #ffffff;
+      --off-white: #f5f3ef;
+      --light: #ebe8e2;
+      --mid: #c8c2b8;
+      --dark: #1a1814;
+      --accent: #e05c2a;
+      --accent2: #f0a500;
+      --text: #2a2520;
+      --text-muted: #7a7068;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Manrope', sans-serif;
+      background: var(--off-white);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    /* ── CURSOR ── */
+    .cursor {
+      width: 12px; height: 12px;
+      background: var(--accent);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%);
+      transition: transform 0.1s ease, width 0.3s, height 0.3s, background 0.3s;
+      mix-blend-mode: multiply;
+    }
+    .cursor-ring {
+      width: 38px; height: 38px;
+      border: 1.5px solid var(--accent);
+      border-radius: 50%;
+      position: fixed; top: 0; left: 0;
+      pointer-events: none; z-index: 9998;
+      transform: translate(-50%,-50%);
+      transition: transform 0.18s ease, width 0.3s, height 0.3s, opacity 0.3s;
+      opacity: 0.6;
+    }
+
+    /* ── NOISE ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none; z-index: 0; opacity: 0.5;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 48px;
+      backdrop-filter: blur(12px);
+      background: rgba(245,243,239,0.85);
+      border-bottom: 1px solid rgba(200,194,184,0.3);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.6rem;
+      letter-spacing: 0.08em;
+      color: var(--dark);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links { display: flex; gap: 36px; list-style: none; }
+    .nav-links a {
+      font-size: 0.8rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--text-muted); text-decoration: none;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: 120px 48px 80px;
+      gap: 48px;
+      align-items: center;
+      position: relative;
+    }
+    .hero-left { position: relative; z-index: 1; }
+    .hero-tag {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent);
+      margin-bottom: 28px;
+    }
+    .hero-tag::before {
+      content: ''; width: 28px; height: 2px; background: var(--accent);
+    }
+    .hero-name {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(5rem, 10vw, 9rem);
+      line-height: 0.92;
+      color: var(--dark);
+      letter-spacing: 0.02em;
+      margin-bottom: 24px;
+    }
+    .hero-name span {
+      display: block;
+      -webkit-text-stroke: 2px var(--dark);
+      color: transparent;
+    }
+    .hero-desc {
+      font-size: 1.05rem; font-weight: 400; line-height: 1.7;
+      color: var(--text-muted);
+      max-width: 420px;
+      margin-bottom: 44px;
+    }
+    .hero-desc strong { color: var(--text); font-weight: 600; }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 12px;
+      background: var(--dark);
+      color: var(--white);
+      padding: 16px 32px;
+      font-size: 0.82rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      text-decoration: none;
+      transition: background 0.25s, transform 0.2s;
+    }
+    .hero-cta:hover { background: var(--accent); transform: translateY(-2px); }
+    .hero-cta svg { transition: transform 0.2s; }
+    .hero-cta:hover svg { transform: translateX(4px); }
+
+    .hero-right {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; gap: 20px;
+      align-items: flex-end;
+    }
+    .hero-card {
+      background: var(--white);
+      border: 1px solid var(--light);
+      padding: 28px 32px;
+      width: 100%;
+      max-width: 360px;
+      position: relative;
+      overflow: hidden;
+      animation: fadeUp 0.7s ease both;
+    }
+    .hero-card:nth-child(2) { animation-delay: 0.15s; margin-right: -24px; }
+    .hero-card:nth-child(3) { animation-delay: 0.3s; }
+    .hero-card::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; width: 4px; height: 100%;
+      background: var(--accent);
+    }
+    .card-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2.8rem; color: var(--light);
+      line-height: 1; margin-bottom: 8px;
+    }
+    .card-title {
+      font-size: 0.9rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--dark); margin-bottom: 6px;
+    }
+    .card-text {
+      font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;
+    }
+
+    /* ── BIG TEXT ── */
+    .marquee-wrap {
+      overflow: hidden;
+      border-top: 1px solid var(--light);
+      border-bottom: 1px solid var(--light);
+      padding: 18px 0;
+      background: var(--white);
+    }
+    .marquee {
+      display: flex; gap: 48px;
+      width: max-content;
+      animation: marquee 18s linear infinite;
+    }
+    .marquee-item {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 2rem; letter-spacing: 0.08em;
+      color: var(--mid); white-space: nowrap;
+    }
+    .marquee-item span { color: var(--accent); margin: 0 8px; }
+
+    /* ── SECTION SHARED ── */
+    section { padding: 100px 48px; position: relative; }
+    .section-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.18em;
+      color: var(--accent); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--light); max-width: 60px;
+    }
+    .section-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      line-height: 1; color: var(--dark);
+      margin-bottom: 56px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── SERVICES ── */
+    .services { background: var(--dark); }
+    .services .section-label { color: var(--accent2); }
+    .services .section-label::after { background: rgba(255,255,255,0.1); }
+    .services .section-title { color: var(--white); }
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+    }
+    .service-item {
+      background: rgba(255,255,255,0.04);
+      padding: 44px 36px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: background 0.3s, transform 0.3s;
+      position: relative; overflow: hidden;
+    }
+    .service-item:hover { background: rgba(255,255,255,0.08); transform: translateY(-4px); }
+    .service-icon {
+      width: 44px; height: 44px; margin-bottom: 20px; display: block;
+      color: var(--accent);
+    }
+    .service-icon svg { width: 100%; height: 100%; stroke: currentColor; fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+    .service-name {
+      font-size: 1.1rem; font-weight: 700;
+      color: var(--white); margin-bottom: 12px;
+    }
+    .service-desc {
+      font-size: 0.85rem; color: rgba(255,255,255,0.45); line-height: 1.7;
+    }
+    .service-num {
+      position: absolute; top: 20px; right: 24px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 3.5rem; color: rgba(255,255,255,0.04);
+    }
+
+    /* ── WORKS ── */
+    .works { background: var(--off-white); }
+    .works-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    .work-card {
+      background: var(--white);
+      border: 1px solid var(--light);
+      overflow: hidden;
+      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative;
+    }
+    .work-card:hover { transform: translateY(-6px); box-shadow: 0 24px 48px rgba(26,24,20,0.1); }
+    .work-card:first-child { grid-column: span 2; }
+    .work-img {
+      width: 100%; aspect-ratio: 16/7;
+      background: linear-gradient(135deg, var(--dark) 0%, #3a3530 100%);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      color: rgba(255,255,255,0.06);
+      letter-spacing: 0.05em;
+      position: relative; overflow: hidden;
+    }
+    .work-card:nth-child(2) .work-img { aspect-ratio: 4/3; background: linear-gradient(135deg, #1e3a2f 0%, #2d5a45 100%); }
+    .work-card:nth-child(3) .work-img { aspect-ratio: 4/3; background: linear-gradient(135deg, #2a1e3a 0%, #4a2d6a 100%); }
+    .work-svg-icon {
+      position: absolute;
+      width: 72px; height: 72px;
+      opacity: 0.18;
+      stroke: white; fill: none; stroke-width: 1; stroke-linecap: round; stroke-linejoin: round;
+    }
+    .work-info { padding: 28px 32px; }
+    .work-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+    .work-tag {
+      font-size: 0.68rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      color: var(--accent); background: rgba(224,92,42,0.08);
+      padding: 4px 10px;
+    }
+    .work-name {
+      font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 8px;
+    }
+    .work-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── ABOUT ── */
+    .about {
+      background: var(--white);
+      display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+    }
+    .about-visual {
+      position: relative; height: 480px;
+    }
+    .about-box {
+      position: absolute;
+      background: var(--dark); color: var(--white);
+      padding: 40px;
+      width: 320px;
+    }
+    .about-box:first-child { top: 0; left: 0; }
+    .about-box:nth-child(2) {
+      background: var(--accent);
+      width: 200px; height: 200px;
+      bottom: 0; right: 0;
+      display: flex; align-items: center; justify-content: center;
+      flex-direction: column; text-align: center;
+    }
+    .about-box-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 4rem; line-height: 1;
+    }
+    .about-box-label {
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.12em;
+      opacity: 0.8;
+    }
+    .about-box-text {
+      font-size: 0.85rem; color: rgba(255,255,255,0.6); line-height: 1.7; margin-top: 12px;
+    }
+    .about-text p {
+      font-size: 1rem; line-height: 1.8; color: var(--text-muted); margin-bottom: 24px;
+    }
+    .about-text p strong { color: var(--text); }
+    .skills-list {
+      display: flex; flex-wrap: wrap; gap: 10px; margin-top: 32px;
+    }
+    .skill-pill {
+      font-size: 0.78rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      padding: 8px 16px;
+      border: 1.5px solid var(--light);
+      color: var(--text-muted);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .skill-pill:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ── CONTACT ── */
+    .contact {
+      background: var(--dark);
+      text-align: center;
+      padding: 120px 48px;
+    }
+    .contact .section-label { justify-content: center; color: var(--accent2); }
+    .contact .section-label::after { display: none; }
+    .contact .section-title { color: var(--white); }
+    .contact-desc {
+      font-size: 1.05rem; color: rgba(255,255,255,0.45);
+      max-width: 480px; margin: -36px auto 52px;
+      line-height: 1.7;
+    }
+    .contact-links {
+      display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+    }
+    .contact-btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      padding: 16px 36px;
+      font-size: 0.82rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.14em;
+      text-decoration: none;
+      transition: transform 0.2s, background 0.2s;
+    }
+    .contact-btn-primary {
+      background: var(--accent); color: var(--white);
+    }
+    .contact-btn-primary:hover { background: #c44d22; transform: translateY(-2px); }
+    .contact-btn-secondary {
+      background: transparent;
+      border: 1.5px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+    }
+    .contact-btn-secondary:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-2px); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: #111009;
+      padding: 28px 48px;
+      display: flex; align-items: center; justify-content: space-between;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1.4rem; letter-spacing: 0.08em;
+      color: rgba(255,255,255,0.3);
+    }
+    .footer-copy {
+      font-size: 0.75rem; color: rgba(255,255,255,0.2);
+      text-transform: uppercase; letter-spacing: 0.1em;
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(40px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    .hero-left { animation: fadeUp 0.8s ease both; }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      nav { padding: 18px 24px; }
+      .hero { grid-template-columns: 1fr; padding: 100px 24px 60px; }
+      .hero-right { align-items: flex-start; }
+      .hero-card:nth-child(2) { margin-right: 0; }
+      section { padding: 72px 24px; }
+      .services-grid { grid-template-columns: 1fr; }
+      .works-grid { grid-template-columns: 1fr; }
+      .work-card:first-child { grid-column: span 1; }
+      .about { grid-template-columns: 1fr; gap: 40px; }
+      .about-visual { height: auto; display: flex; gap: 16px; flex-wrap: wrap; }
+      .about-box { position: static; width: 100%; }
+      footer { flex-direction: column; gap: 12px; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">ЗА<span>Х</span>АР</a>
+    <ul class="nav-links">
+      <li><a href="#services">Услуги</a></li>
+      <li><a href="#works">Работы</a></li>
+      <li><a href="#about">О себе</a></li>
+      <li><a href="#contact">Контакт</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-tag">Веб-разработчик · Фриланс</div>
+      <h1 class="hero-name">
+        ЗАХАР
+        <span>ПРОЕКТ</span>
+      </h1>
+      <p class="hero-desc">
+        Создаю <strong>современные сайты и Telegram-приложения</strong>, которые работают быстро, выглядят сильно и решают реальные задачи бизнеса.
+      </p>
+      <a href="#contact" class="hero-cta">
+        Обсудить проект
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </a>
+    </div>
+    <div class="hero-right">
+      <div class="hero-card">
+        <div class="card-num">01</div>
+        <div class="card-title">Telegram Mini Apps</div>
+        <div class="card-text">Встроенные приложения прямо внутри Telegram — удобно, быстро, без App Store.</div>
+      </div>
+      <div class="hero-card">
+        <div class="card-num">02</div>
+        <div class="card-title">Боты и автоматизация</div>
+        <div class="card-text">Умные боты, которые работают 24/7 и экономят ваше время.</div>
+      </div>
+      <div class="hero-card">
+        <div class="card-num">03</div>
+        <div class="card-title">Сайты под ключ</div>
+        <div class="card-text">От лендинга до полноценного веб-приложения — чистый код, стильный дизайн.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
+    <div class="marquee">
+      <span class="marquee-item">WEB DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">TELEGRAM MINI APP <span>✦</span></span>
+      <span class="marquee-item">BOT DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">FRONTEND <span>✦</span></span>
+      <span class="marquee-item">CLEAN CODE <span>✦</span></span>
+      <span class="marquee-item">WEB DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">TELEGRAM MINI APP <span>✦</span></span>
+      <span class="marquee-item">BOT DEVELOPMENT <span>✦</span></span>
+      <span class="marquee-item">FRONTEND <span>✦</span></span>
+      <span class="marquee-item">CLEAN CODE <span>✦</span></span>
+    </div>
+  </div>
+
+  <!-- SERVICES -->
+  <section class="services reveal" id="services">
+    <div class="section-label">Чем я занимаюсь</div>
+    <div class="section-title">УСЛУГИ</div>
+    <div class="services-grid">
+      <div class="service-item">
+        <div class="service-num">01</div>
+        <span class="service-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/><path d="M7 8h10M7 11h6"/></svg></span>
+        <div class="service-name">Сайты под ключ</div>
+        <div class="service-desc">Лендинги, корпоративные сайты, портфолио. Адаптивная вёрстка, быстрая загрузка, SEO-оптимизация.</div>
+      </div>
+      <div class="service-item">
+        <div class="service-num">02</div>
+        <span class="service-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/><path d="M9 6h6M9 10h4"/></svg></span>
+        <div class="service-name">Telegram Mini Apps</div>
+        <div class="service-desc">Мини-приложения внутри Telegram: магазины, сервисы, игры, личные кабинеты.</div>
+      </div>
+      <div class="service-item">
+        <div class="service-num">03</div>
+        <span class="service-icon"><svg viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 1 7 7c0 4-3 6-3 9H8c0-3-3-5-3-9a7 7 0 0 1 7-7z"/><path d="M9 21h6M10 17v-5l-2-2M14 17v-5l2-2M12 12V8"/></svg></span>
+        <div class="service-name">Telegram-боты</div>
+        <div class="service-desc">Автоответы, воронки продаж, интеграция с API — боты для любого бизнеса.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKS -->
+  <section class="works reveal" id="works">
+    <div class="section-label">Портфолио</div>
+    <div class="section-title">МОИ РАБОТЫ</div>
+    <div class="works-grid">
+      <div class="work-card">
+        <div class="work-img">
+          MINI APP
+          <svg class="work-svg-icon" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/><path d="M9 6h6M9 10h4"/></svg>
+        </div>
+        <div class="work-info">
+          <div class="work-tags">
+            <span class="work-tag">Telegram</span>
+            <span class="work-tag">Mini App</span>
+            <span class="work-tag">JavaScript</span>
+          </div>
+          <div class="work-name">Telegram Mini App</div>
+          <div class="work-desc">Полноценное приложение внутри Telegram с удобным интерфейсом и интеграцией с API.</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-img">
+          BOT
+          <svg class="work-svg-icon" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="12" rx="2"/><path d="M12 2v6M8 2h8"/><circle cx="9" cy="14" r="1.5"/><circle cx="15" cy="14" r="1.5"/><path d="M9 18h6"/></svg>
+        </div>
+        <div class="work-info">
+          <div class="work-tags">
+            <span class="work-tag">Telegram Bot</span>
+            <span class="work-tag">Python</span>
+          </div>
+          <div class="work-name">Telegram-бот</div>
+          <div class="work-desc">Автоматизированный бот с командами, меню и подключённой базой данных.</div>
+        </div>
+      </div>
+      <div class="work-card">
+        <div class="work-img">
+          WEB
+          <svg class="work-svg-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div class="work-info">
+          <div class="work-tags">
+            <span class="work-tag">HTML/CSS</span>
+            <span class="work-tag">JavaScript</span>
+          </div>
+          <div class="work-name">Веб-проект</div>
+          <div class="work-desc">Современный адаптивный сайт с анимациями и чистым кодом.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section class="about reveal" id="about">
+    <div class="about-visual">
+      <div class="about-box">
+        <div class="about-box-num" style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.1em;margin-bottom:8px;opacity:0.5;">О РАЗРАБОТЧИКЕ</div>
+        <p class="about-box-text">Захар — веб-разработчик, специализирующийся на создании сайтов и Telegram-продуктов. Умею превращать идеи в работающие цифровые решения с чистым кодом и вниманием к деталям.</p>
+      </div>
+      <div class="about-box" style="position:absolute;bottom:0;right:0;">
+        <div class="about-box-num">∞</div>
+        <div class="about-box-label">Идей в работе</div>
+      </div>
+    </div>
+    <div class="about-text">
+      <div class="section-label">О себе</div>
+      <div class="section-title" style="font-size:2.8rem;margin-bottom:32px;">КТО Я</div>
+      <p>Я <strong>веб-разработчик-фрилансер</strong>, который делает сайты, Telegram Mini Apps и ботов. Работаю с клиентами напрямую — без лишних посредников.</p>
+      <p>Мой подход: <strong>понять задачу → предложить решение → сделать качественно</strong>. Для меня важны сроки, чистый код и результат, который нравится заказчику.</p>
+      <div class="skills-list">
+        <span class="skill-pill">HTML / CSS</span>
+        <span class="skill-pill">JavaScript</span>
+        <span class="skill-pill">Telegram API</span>
+        <span class="skill-pill">Bot Development</span>
+        <span class="skill-pill">Mini Apps</span>
+        <span class="skill-pill">Responsive Design</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section class="contact reveal" id="contact">
+    <div class="section-label">Связаться</div>
+    <div class="section-title">ДАВАЙТЕ<br>РАБОТАТЬ</div>
+    <p class="contact-desc">Есть проект или идея? Напишите — обсудим детали, сроки и стоимость.</p>
+    <div class="contact-links">
+      <a href="mailto:zahar.proekt76@mail.ru" class="contact-btn contact-btn-primary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Написать на почту
+      </a>
+      <a href="https://t.me/zahar_proekt76" class="contact-btn contact-btn-secondary" target="_blank">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+        Telegram
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">ЗАХАР</div>
+    <div class="footer-copy">© 2024 · Веб-разработчик · Фриланс</div>
+  </footer>
+
+  <script>
+    // Custom cursor
+    const cursor = document.getElementById('cursor');
+    const ring   = document.getElementById('cursorRing');
+    let mx = 0, my = 0, rx = 0, ry = 0;
+    document.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+    function animateCursor() {
+      cursor.style.left = mx + 'px'; cursor.style.top = my + 'px';
+      rx += (mx - rx) * 0.12; ry += (my - ry) * 0.12;
+      ring.style.left = rx + 'px'; ring.style.top = ry + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+    document.querySelectorAll('a,button').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        cursor.style.width = '20px'; cursor.style.height = '20px';
+        ring.style.width = '56px'; ring.style.height = '56px';
+      });
+      el.addEventListener('mouseleave', () => {
+        cursor.style.width = '12px'; cursor.style.height = '12px';
+        ring.style.width = '38px'; ring.style.height = '38px';
+      });
+    });
+
+    // Reveal on scroll
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.12 });
+    reveals.forEach(r => observer.observe(r));
+  </script>
+</body>
+</html>
